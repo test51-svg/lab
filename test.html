@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>객체를 인식하는 자율주행</title>
+<style>
+  :root{
+    --bg:#f4f7fb;
+    --panel:#ffffff;
+    --ink:#17324d;
+    --sub:#4b647e;
+    --accent:#2b8cff;
+    --danger:#e34b4b;
+    --warn:#f3a524;
+    --ok:#2ea44f;
+    --line:#cfd9e6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: "Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+    background:linear-gradient(180deg,#eef5ff 0%,#f9fbff 100%);
+    color:var(--ink);
+  }
+  .wrap{
+    max-width:1400px;
+    margin:0 auto;
+    padding:1rem;
+  }
+  h1{
+    margin:.2rem 0 .5rem;
+    font-size:clamp(1.8rem,3.4vw,3rem);
+    text-align:center;
+  }
+  .subtitle{
+    text-align:center;
+    font-size:clamp(1rem,1.8vw,1.3rem);
+    color:var(--sub);
+    margin-bottom:1rem;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns: 1.3fr .9fr;
+    gap:1rem;
+  }
+  .panel{
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:18px;
+    box-shadow:0 8px 22px rgba(30,70,120,.08);
+    padding:1rem;
+  }
+  .sceneBox{
+    display:flex;
+    flex-direction:column;
+    gap:.8rem;
+  }
+  canvas{
+    width:100%;
+    height:auto;
+    display:block;
+    border-radius:16px;
+    border:2px solid var(--line);
+    background:#fff;
+  }
+  .statusGrid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:.7rem;
+  }
+  .card{
+    background:#f8fbff;
+    border:2px solid var(--line);
+    border-radius:14px;
+    padding:.8rem;
+    min-height:92px;
+  }
+  .card .label{
+    font-size:clamp(.9rem,1.4vw,1.05rem);
+    color:var(--sub);
+  }
+  .card .value{
+    margin-top:.3rem;
+    font-size:clamp(1.1rem,2.3vw,1.7rem);
+    font-weight:700;
+  }
+  .controls h2, .logPanel h2, .graphPanel h2{
+    margin:.2rem 0 .8rem;
+    font-size:clamp(1.3rem,2vw,1.7rem);
+  }
+  .signGrid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:.8rem;
+  }
+  .signBtn{
+    border:3px solid var(--line);
+    border-radius:18px;
+    background:#fff;
+    padding:.8rem;
+    cursor:pointer;
+    transition:.15s transform,.15s box-shadow,.15s border-color;
+    min-height:130px;
+  }
+  .signBtn:hover, .signBtn:focus{
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(0,0,0,.08);
+    border-color:#8ab8ff;
+    outline:none;
+  }
+  .signIcon{
+    width:70px;height:70px;margin:0 auto .5rem;display:block;
+  }
+  .signTitle{
+    text-align:center;
+    font-size:clamp(1rem,1.6vw,1.2rem);
+    font-weight:700;
+  }
+  .signDesc{
+    margin-top:.25rem;
+    text-align:center;
+    color:var(--sub);
+    font-size:clamp(.9rem,1.2vw,1rem);
+    line-height:1.35;
+  }
+  .btnRow{
+    display:flex;
+    gap:.8rem;
+    margin-top:1rem;
+    flex-wrap:wrap;
+  }
+  button.action{
+    flex:1;
+    min-width:180px;
+    border:none;
+    border-radius:14px;
+    padding:.9rem 1rem;
+    font-size:clamp(1rem,1.6vw,1.15rem);
+    font-weight:700;
+    cursor:pointer;
+  }
+  .reset{ background:#17324d; color:#fff; }
+  .toggle{ background:#e9f2ff; color:#124; border:2px solid #bdd6ff; }
+  .conceptBox{
+    margin-top:1rem;
+    background:#fff9e8;
+    border:2px solid #f0d38a;
+    border-radius:14px;
+    padding:.9rem;
+    font-size:clamp(1rem,1.4vw,1.15rem);
+    line-height:1.5;
+  }
+  .log{
+    height:230px;
+    overflow:auto;
+    border:2px solid var(--line);
+    border-radius:14px;
+    background:#fbfdff;
+    padding:.6rem;
+  }
+  .logItem{
+    padding:.55rem .6rem;
+    margin-bottom:.45rem;
+    border-radius:10px;
+    border-left:6px solid var(--accent);
+    background:#eef6ff;
+    font-size:clamp(.95rem,1.25vw,1.05rem);
+    line-height:1.45;
+  }
+  .small{
+    color:var(--sub);
+    font-size:clamp(.85rem,1.1vw,.98rem);
+  }
+  .legend{
+    display:flex;
+    gap:1rem;
+    flex-wrap:wrap;
+    margin-top:.45rem;
+    color:var(--sub);
+    font-size:clamp(.9rem,1.2vw,1rem);
+  }
+  .dot{
+    display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:.35rem;vertical-align:-2px;
+  }
+  .footerTip{
+    margin-top:.7rem;
+    color:var(--sub);
+    font-size:clamp(.95rem,1.2vw,1rem);
+  }
+
+  @media (max-width: 980px){
+    .layout{ grid-template-columns:1fr; }
+    .statusGrid{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width: 560px){
+    .signGrid{ grid-template-columns:1fr; }
+    .statusGrid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>객체를 인식하는 자율주행</h1>
+  <div class="subtitle">교통 표지판을 클릭하면 자율주행 자동차가 표지판을 인식하고, 정지·가속·감속을 수행합니다.</div>
+
+  <div class="layout">
+    <div class="sceneBox">
+      <div class="panel">
+        <canvas id="scene" width="900" height="420" aria-label="자율주행 도로 장면"></canvas>
+        <div class="statusGrid" style="margin-top:.8rem;">
+          <div class="card">
+            <div class="label">현재 속도</div>
+            <div class="value"><span id="speedNow">40</span> km/h</div>
+          </div>
+          <div class="card">
+            <div class="label">인식한 표지판</div>
+            <div class="value" id="detectedSign">없음</div>
+          </div>
+          <div class="card">
+            <div class="label">판단 결과</div>
+            <div class="value" id="decision">직진 유지</div>
+          </div>
+          <div class="card">
+            <div class="label">주행 상태</div>
+            <div class="value" id="stateText">안전 주행</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel graphPanel">
+        <h2>속도 변화 그래프</h2>
+        <canvas id="graph" width="900" height="300" aria-label="시간에 따른 속도 그래프"></canvas>
+        <div class="legend">
+          <span><span class="dot" style="background:#2b8cff;"></span>속도 곡선</span>
+          <span><span class="dot" style="background:#e34b4b;"></span>표지판 인식 시점</span>
+          <span>가로축: 시간(s)</span>
+          <span>세로축: 속도(km/h)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="panel controls">
+        <h2>교통 표지판 클릭</h2>
+        <div class="signGrid">
+          <button class="signBtn" data-sign="정지">
+            <svg class="signIcon" viewBox="0 0 100 100" aria-hidden="true">
+              <polygon points="30,8 70,8 92,30 92,70 70,92 30,92 8,70 8,30" fill="#e34b4b" stroke="#ffffff" stroke-width="6"></polygon>
+              <text x="50" y="58" text-anchor="middle" font-size="20" font-weight="700" fill="#ffffff">정지</text>
+            </svg>
+            <div class="signTitle">정지 표지판</div>
+            <div class="signDesc">자동차가 멈춰야 합니다.</div>
+          </button>
+
+          <button class="signBtn" data-sign="속도 증가">
+            <svg class="signIcon" viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="38" fill="#ffffff" stroke="#2b8cff" stroke-width="8"></circle>
+              <text x="50" y="58" text-anchor="middle" font-size="24" font-weight="700" fill="#2b8cff">↑</text>
+            </svg>
+            <div class="signTitle">속도 증가 표지판</div>
+            <div class="signDesc">더 빠르게 주행합니다.</div>
+          </button>
+
+          <button class="signBtn" data-sign="속도 감소">
+            <svg class="signIcon" viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="38" fill="#ffffff" stroke="#f3a524" stroke-width="8"></circle>
+              <text x="50" y="58" text-anchor="middle" font-size="24" font-weight="700" fill="#f3a524">↓</text>
+            </svg>
+            <div class="signTitle">속도 감소 표지판</div>
+            <div class="signDesc">더 천천히 주행합니다.</div>
+          </button>
+
+          <button class="signBtn" data-sign="횡단보도">
+            <svg class="signIcon" viewBox="0 0 100 100" aria-hidden="true">
+              <polygon points="50,8 92,82 8,82" fill="#2ea44f" stroke="#ffffff" stroke-width="6"></polygon>
+              <rect x="28" y="54" width="44" height="8" fill="#fff"></rect>
+              <rect x="32" y="44" width="10" height="10" fill="#fff"></rect>
+              <rect x="44" y="44" width="10" height="10" fill="#fff"></rect>
+              <rect x="56" y="44" width="10" height="10" fill="#fff"></rect>
+            </svg>
+            <div class="signTitle">횡단보도 표지판</div>
+            <div class="signDesc">보행자를 생각해 감속합니다.</div>
+          </button>
+        </div>
+
+        <div class="btnRow">
+          <button id="autoDemoBtn" class="action toggle">표지판 자동 등장 보기</button>
+          <button id="resetBtn" class="action reset">다시 시작</button>
+        </div>
+
+        <div class="conceptBox">
+          <strong>확인할 개념</strong><br>
+          자율주행 자동차는 카메라 등으로 <strong>객체(교통 표지판)</strong>를 인식한 뒤, 그 의미를 판단하여 <strong>속도와 움직임을 즉시 바꿉니다.</strong>
+        </div>
+      </div>
+
+      <div class="panel logPanel">
+        <h2>추론 기록</h2>
+        <div class="small">표지판 인식 결과와 자율주행 자동차의 판단을 시간순으로 계속 기록합니다.</div>
+        <div id="log" class="log" aria-live="polite"></div>
+        <div class="footerTip">질문: 어떤 표지판을 클릭했을 때 자동차의 속도 그래프가 가장 크게 변하나요?</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const scene = document.getElementById('scene');
+  const sctx = scene.getContext('2d');
+  const graph = document.getElementById('graph');
+  const gctx = graph.getContext('2d');
+
+  const speedNowEl = document.getElementById('speedNow');
+  const detectedSignEl = document.getElementById('detectedSign');
+  const decisionEl = document.getElementById('decision');
+  const stateTextEl = document.getElementById('stateText');
+  const logEl = document.getElementById('log');
+  const resetBtn = document.getElementById('resetBtn');
+  const autoDemoBtn = document.getElementById('autoDemoBtn');
+  const signButtons = document.querySelectorAll('.signBtn');
+
+  const state = {
+    x: 120,
+    y: 310,
+    speed: 40,
+    targetSpeed: 40,
+    accel: 18,           // km/h per second에 해당하는 반응 세기
+    currentSign: '없음',
+    decision: '직진 유지',
+    drivingState: '안전 주행',
+    time: 0,
+    running: true,
+    history: [],
+    events: [],
+    lastTs: 0,
+    autoDemo: false,
+    nextAutoTime: 3,
+    autoIndex: 0
+  };
+
+  const autoSigns = ['속도 증가','속도 감소','횡단보도','정지'];
+
+  function addLog(text, color = '#2b8cff'){
+    const item = document.createElement('div');
+    item.className = 'logItem';
+    item.style.borderLeftColor = color;
+    item.innerHTML = `<strong>${state.time.toFixed(1)}초</strong> · ${text}`;
+    logEl.prepend(item);
+  }
+
+  function resetAll(){
+    state.x = 120;
+    state.y = 310;
+    state.speed = 40;
+    state.targetSpeed = 40;
+    state.currentSign = '없음';
+    state.decision = '직진 유지';
+    state.drivingState = '안전 주행';
+    state.time = 0;
+    state.history = [{t:0, speed:40}];
+    state.events = [];
+    state.lastTs = 0;
+    state.autoDemo = false;
+    state.nextAutoTime = 3;
+    state.autoIndex = 0;
+    autoDemoBtn.textContent = '표지판 자동 등장 보기';
+    logEl.innerHTML = '';
+    addLog('주행을 시작합니다. 현재 속도 40 km/h, 전방을 탐색 중입니다.', '#2ea44f');
+    updateText();
+    drawScene();
+    drawGraph();
+  }
+
+  function updateText(){
+    speedNowEl.textContent = state.speed.toFixed(0);
+    detectedSignEl.textContent = state.currentSign;
+    decisionEl.textContent = state.decision;
+    stateTextEl.textContent = state.drivingState;
+  }
+
+  function recognizeSign(sign){
+    state.currentSign = sign;
+
+    if(sign === '정지'){
+      state.targetSpeed = 0;
+      state.decision = '정지 표지판 인식 → 완전히 멈춤';
+      state.drivingState = '정지 중';
+      addLog('카메라가 <strong>정지 표지판</strong>을 인식했습니다. 자동차가 브레이크를 작동하여 멈춥니다.', '#e34b4b');
+    } else if(sign === '속도 증가'){
+      state.targetSpeed = 70;
+      state.decision = '속도 증가 표지판 인식 → 가속';
+      state.drivingState = '가속 중';
+      addLog('카메라가 <strong>속도 증가 표지판</strong>을 인식했습니다. 자동차가 목표 속도를 70 km/h로 높입니다.', '#2b8cff');
+    } else if(sign === '속도 감소'){
+      state.targetSpeed = 20;
+      state.decision = '속도 감소 표지판 인식 → 감속';
+      state.drivingState = '감속 중';
+      addLog('카메라가 <strong>속도 감소 표지판</strong>을 인식했습니다. 자동차가 목표 속도를 20 km/h로 낮춥니다.', '#f3a524');
+    } else if(sign === '횡단보도'){
+      state.targetSpeed = 10;
+      state.decision = '횡단보도 표지판 인식 → 천천히 통과';
+      state.drivingState = '주의 주행';
+      addLog('카메라가 <strong>횡단보도 표지판</strong>을 인식했습니다. 보행자 안전을 위해 10 km/h까지 감속합니다.', '#2ea44f');
+    }
+
+    state.events.push({t: state.time, sign});
+    updateText();
+  }
+
+  function drawRoadBackground(ctx, w, h){
+    const skyH = h * 0.48;
+    const roadTop = h * 0.52;
+    ctx.clearRect(0,0,w,h);
+
+    const sky = ctx.createLinearGradient(0,0,0,skyH);
+    sky.addColorStop(0,'#bfe2ff');
+    sky.addColorStop(1,'#eef8ff');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0,0,w,skyH);
+
+    ctx.fillStyle = '#9ed27e';
+    ctx.fillRect(0,roadTop-10,w,h-roadTop+10);
+
+    ctx.fillStyle = '#505662';
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.lineTo(w, h);
+    ctx.lineTo(w, roadTop);
+    ctx.lineTo(0, roadTop);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 5;
+    ctx.setLineDash([24,18]);
+    ctx.beginPath();
+    ctx.moveTo(0, (roadTop+h)/2);
+    ctx.lineTo(w, (roadTop+h)/2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#6aa84f';
+    for(let i=0;i<6;i++){
+      ctx.beginPath();
+      ctx.arc(70+i*150, roadTop-15, 24, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillRect(66+i*150, roadTop-15, 8, 28);
+    }
+  }
+
+  function drawCar(ctx, x, y, scale=1){
+    const speedFactor = Math.min(Math.abs(state.targetSpeed - state.speed)/40,1);
+    const bounce = Math.sin(state.time*8) * (state.speed>0 ? 1.5 : 0.3) * scale;
+    ctx.save();
+    ctx.translate(x, y + bounce);
+
+    ctx.fillStyle = '#2b8cff';
+    ctx.fillRect(-55*scale, -24*scale, 110*scale, 32*scale);
+    ctx.beginPath();
+    ctx.moveTo(-22*scale, -24*scale);
+    ctx.lineTo(12*scale, -24*scale);
+    ctx.lineTo(36*scale, -46*scale);
+    ctx.lineTo(-4*scale, -46*scale);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#dff3ff';
+    ctx.fillRect(-1*scale, -42*scale, 28*scale, 15*scale);
+    ctx.fillRect(-18*scale, -42*scale, 14*scale, 15*scale);
+
+    ctx.fillStyle = '#222';
+    ctx.beginPath(); ctx.arc(-30*scale, 10*scale, 13*scale, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(30*scale, 10*scale, 13*scale, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#9aa6b2';
+    ctx.beginPath(); ctx.arc(-30*scale, 10*scale, 6*scale, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(30*scale, 10*scale, 6*scale, 0, Math.PI*2); ctx.fill();
+
+    if(state.drivingState === '정지 중'){
+      ctx.fillStyle = '#ff5a5a';
+      ctx.fillRect(-57*scale, -14*scale, 5*scale, 8*scale);
+      ctx.fillRect(52*scale, -14*scale, 5*scale, 8*scale);
+    } else {
+      ctx.fillStyle = '#ffd15c';
+      ctx.fillRect(52*scale, -14*scale, 5*scale, 8*scale);
+    }
+
+    if(speedFactor > 0.05){
+      ctx.strokeStyle = 'rgba(255,255,255,.5)';
+      ctx.lineWidth = 3;
+      for(let i=0;i<3;i++){
+        ctx.beginPath();
+        ctx.moveTo(-70*scale - i*12, 0);
+        ctx.lineTo(-95*scale - i*16, 0);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawCurrentRecognizedSign(ctx, sign){
+    const x = scene.width - 130;
+    const y = 160;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = 'rgba(255,255,255,.92)';
+    ctx.strokeStyle = '#cfd9e6';
+    ctx.lineWidth = 2;
+    roundRect(ctx,-70,-78,140,156,16,true,true);
+
+    ctx.fillStyle = '#17324d';
+    ctx.font = 'bold 22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('인식한 표지판', 0, -48);
+
+    if(sign === '정지'){
+      ctx.fillStyle = '#e34b4b';
+      polygon(ctx, 0, 10, 40, 8);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText('정지', 0, 16);
+    } else if(sign === '속도 증가'){
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = '#2b8cff';
+      ctx.lineWidth = 7;
