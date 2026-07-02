@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>탐구 산출물 소개 - 표지판 인식</title>
+  <style>
+    :root{
+      --bg1:#f7fbff;
+      --bg2:#eef4fb;
+      --card:#ffffff;
+      --text:#162033;
+      --sub:#4c5d78;
+      --line:#d7e1ef;
+      --accent:#2f6fe4;
+      --accent2:#5b93ff;
+      --good:#18a558;
+      --warn:#e39b12;
+      --danger:#d94a4a;
+      --shadow:0 18px 36px rgba(18,32,56,0.12);
+      --radius:24px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+      margin:0;
+      padding:0;
+      font-family:Arial, "맑은 고딕", "Malgun Gothic", sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,var(--bg1),var(--bg2));
+    }
+
+    body{
+      min-height:100vh;
+    }
+
+    .wrap{
+      width:min(1180px, calc(100% - 24px));
+      margin:0 auto;
+      padding:24px 0 40px;
+    }
+
+    .hero, .panel, .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .hero{
+      padding:28px;
+      margin-bottom:22px;
+      background:linear-gradient(135deg,#ffffff,#f0f6ff);
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-size:clamp(2rem, 4.4vw, 3.4rem);
+      line-height:1.15;
+      letter-spacing:-0.03em;
+    }
+
+    .hero p{
+      margin:0;
+      font-size:clamp(1.05rem, 2vw, 1.3rem);
+      color:var(--sub);
+      line-height:1.7;
+    }
+
+    .main-grid{
+      display:grid;
+      grid-template-columns:1fr 1.35fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .card{
+      padding:22px;
+    }
+
+    .tag{
+      display:inline-block;
+      padding:7px 13px;
+      border-radius:999px;
+      background:#eef4ff;
+      border:1px solid #cfe0ff;
+      color:#2552ae;
+      font-weight:700;
+      font-size:0.98rem;
+      margin-bottom:10px;
+    }
+
+    h2{
+      margin:0 0 8px;
+      font-size:clamp(1.55rem, 3vw, 2.15rem);
+      line-height:1.2;
+      letter-spacing:-0.02em;
+    }
+
+    .file{
+      margin:0 0 16px;
+      color:var(--sub);
+      font-size:1.02rem;
+      word-break:break-all;
+    }
+
+    .info-box{
+      background:#fbfdff;
+      border:1px solid #e5edf7;
+      border-radius:18px;
+      padding:15px 16px;
+      margin-bottom:14px;
+    }
+
+    .info-box h3{
+      margin:0 0 6px;
+      font-size:1.08rem;
+      color:#2958b8;
+    }
+
+    .info-box p{
+      margin:0;
+      font-size:1.08rem;
+      line-height:1.65;
+    }
+
+    .link-btn, .ghost-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:56px;
+      border-radius:16px;
+      text-decoration:none;
+      font-size:1.12rem;
+      font-weight:700;
+      cursor:pointer;
+      border:none;
+    }
+
+    .link-btn{
+      width:100%;
+      color:#fff;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      box-shadow:0 12px 26px rgba(47,111,228,0.24);
+    }
+
+    .panel{
+      padding:22px;
+    }
+
+    .panel h2{
+      margin-bottom:8px;
+    }
+
+    .desc{
+      margin:0 0 18px;
+      color:var(--sub);
+      font-size:1.08rem;
+      line-height:1.65;
+    }
+
+    .sign-grid{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .sign-btn{
+      border:2px solid var(--line);
+      background:#fff;
+      border-radius:20px;
+      padding:12px 8px;
+      cursor:pointer;
+      transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+      min-height:118px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .sign-btn:hover, .sign-btn:focus{
+      transform:translateY(-2px);
+      border-color:#94b8ff;
+      box-shadow:0 10px 20px rgba(47,111,228,0.14);
+      outline:none;
+    }
+
+    .sign-btn.active{
+      border-color:var(--accent);
+      background:#f3f8ff;
+      box-shadow:0 10px 22px rgba(47,111,228,0.18);
+    }
+
+    .sign-label{
+      font-size:1rem;
+      font-weight:700;
+      text-align:center;
+      line-height:1.35;
+    }
+
+    .sign-draw{
+      width:62px;
+      height:62px;
+      position:relative;
+      flex:0 0 auto;
+    }
+
+    .circle-sign{
+      width:62px;
+      height:62px;
+      border-radius:50%;
+      border:6px solid #d83f3f;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.35rem;
+      font-weight:900;
+      color:#111;
+    }
+
+    .triangle-sign{
+      width:0;
+      height:0;
+      border-left:33px solid transparent;
+      border-right:33px solid transparent;
+      border-bottom:58px solid #d83f3f;
+      position:relative;
+    }
+
+    .triangle-sign::after{
+      content:"";
+      position:absolute;
+      left:-27px;
+      top:9px;
+      width:0;
+      height:0;
+      border-left:27px solid transparent;
+      border-right:27px solid transparent;
+      border-bottom:48px solid #fff;
+    }
+
+    .triangle-mark{
+      position:absolute;
+      left:50%;
+      top:33px;
+      transform:translateX(-50%);
+      font-size:1.5rem;
+      font-weight:900;
+      z-index:2;
+    }
+
+    .square-sign{
+      width:62px;
+      height:62px;
+      border-radius:10px;
+      border:5px solid #1f67d8;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1rem;
+      font-weight:900;
+      color:#1f67d8;
+      line-height:1.1;
+      text-align:center;
+      padding:4px;
+    }
+
+    .status-grid{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .status{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px 12px;
+      background:#fcfdff;
+      min-height:94px;
+    }
+
+    .status .k{
+      display:block;
+      color:var(--sub);
+      font-size:0.98rem;
+      margin-bottom:6px;
+    }
+
+    .status .v{
+      display:block;
+      font-size:1.5rem;
+      font-weight:800;
+      line-height:1.2;
+    }
+
+    .status .small{
+      font-size:1rem;
+      color:var(--sub);
+      margin-top:4px;
+    }
+
+    .canvas-wrap{
+      display:grid;
+      grid-template-columns:1.05fr 1fr;
+      gap:16px;
+    }
+
+    .canvas-card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:14px;
+      background:#fbfdff;
+    }
+
+    .canvas-title{
+      font-size:1.12rem;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+
+    canvas{
+      width:100%;
+      height:auto;
+      display:block;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid #e5edf7;
+    }
+
+    .note{
+      margin-top:12px;
+      padding:14px 16px;
+      background:#f6faff;
+      border:1px solid #dbe8ff;
+      border-radius:18px;
+      font-size:1.05rem;
+      line-height:1.65;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .ghost-btn{
+      padding:0 18px;
+      background:#fff;
+      border:2px solid var(--line);
+      color:var(--text);
+    }
+
+    .footer{
+      margin-top:22px;
+      text-align:center;
+      color:var(--sub);
+      font-size:1rem;
+    }
+
+    @media (max-width: 980px){
+      .main-grid{
+        grid-template-columns:1fr;
+      }
+      .canvas-wrap{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 760px){
+      .sign-grid{
+        grid-template-columns:repeat(2, 1fr);
+      }
+      .status-grid{
+        grid-template-columns:repeat(2, 1fr);
+      }
+      .wrap{
+        width:min(100% - 16px, 1180px);
+        padding-top:16px;
+      }
+      .hero, .card, .panel{
+        padding:18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>탐구 산출물 소개</h1>
+      <p>서울에서 부산까지 주행한다는 상황을 가정하고, 표지판을 클릭하면 자동차의 속도 변화 그래프와 주행 장면이 함께 바뀌도록 구성한 대문 페이지입니다.</p>
+    </section>
+
+    <section class="main-grid">
+      <article class="card">
+        <span class="tag">탐구 산출물</span>
+        <h2>표지판 인식</h2>
+        <p class="file">연결 파일: test.html</p>
+
+        <div class="info-box">
+          <h3>탐구 질문</h3>
+          <p>서울에서 부산까지 이동할 때, 도로 표지판은 운전자의 속도와 주행 판단에 어떤 영향을 줄까?</p>
+        </div>
+
+        <div class="info-box">
+          <h3>사고 흔적</h3>
+          <p>제한속도, 감속, 공사 구간, 휴게소 안내처럼 서로 다른 표지판을 보고 자동차의 움직임이 어떻게 달라질지 장면과 그래프로 연결해 보았다.</p>
+        </div>
+
+        <div class="info-box">
+          <h3>열린 결론</h3>
+          <p>같은 도로라도 표지판의 의미를 어떻게 해석하느냐에 따라 안전과 효율이 달라질 수 있으며, 실제 주행에서는 날씨·교통량·도로 상태도 함께 고려해야 한다.</p>
+        </div>
+
+        <a href="test.html" class="link-btn" target="_blank" rel="noopener">산출물 열기</a>
+      </article>
+
+      <section class="panel">
+        <h2>서울 → 부산 주행 시뮬레이션</h2>
+        <p class="desc">표지판을 클릭해 보세요. 현재 속도, 남은 거리, 예상 장면, 그리고 속도 변화 그래프가 즉시 바뀝니다.</p>
+
+        <div class="sign-grid" aria-label="표지판 선택">
+          <button class="sign-btn active" data-type="speed100" aria-label="제한속도 100">
+            <div class="sign-draw">
+              <div class="circle-sign">100</div>
+            </div>
+            <div class="sign-label">제한속도 100</div>
+          </button>
+
+          <button class="sign-btn" data-type="slow" aria-label="감속">
+            <div class="sign-draw">
+              <div class="triangle-sign"></div>
+              <div class="triangle-mark">!</div>
+            </div>
+            <div class="sign-label">감속</div>
+          </button>
+
+          <button class="sign-btn" data-type="construction" aria-label="공사 구간">
+            <div class="sign-draw">
+              <div class="triangle-sign"></div>
+              <div class="triangle-mark">🚧</div>
+            </div>
+            <div class="sign-label">공사 구간</div>
+          </button>
+
+          <button class="sign-btn" data-type="rest" aria-label="휴게소">
+            <div class="sign-draw">
+              <div class="square-sign">휴게소</div>
+            </div>
+            <div class="sign-label">휴게소</div>
+          </button>
+        </div>
+
+        <div class="status-grid">
+          <div class="status">
+            <span class="k">현재 위치</span>
+            <span class="v" id="positionText">서울 출발</span>
+            <div class="small">경부고속도로 방향</div>
+          </div>
+          <div class="status">
+            <span class="k">현재 속도</span>
+            <span class="v" id="speedText">100 km/h</span>
+            <div class="small" id="speedExplain">표지판에 맞춰 일정하게 주행</div>
+          </div>
+          <div class="status">
+            <span class="k">남은 거리</span>
+            <span class="v" id="distanceText">325 km</span>
+            <div class="small">서울-부산 전체 325 km 가정</div>
+          </div>
+          <div class="status">
+            <span class="k">선택한 표지판</span>
+            <span class="v" id="signText">제한속도 100</span>
+            <div class="small" id="conceptText">속도를 일정하게 유지함</div>
+          </div>
+        </div>
+
+        <div class="canvas-wrap">
+          <div class="canvas-card">
+            <div class="canvas-title">속도 변화 그래프</div>
+            <canvas id="graphCanvas" width="560" height="320" aria-label="속도 변화 그래프"></canvas>
+          </div>
+
+          <div class="canvas-card">
+            <div class="canvas-title">자동차 주행 장면</div>
+            <canvas id="sceneCanvas" width="520" height="320" aria-label="자동차 주행 장면"></canvas>
+          </div>
+        </div>
+
+        <div class="note" id="noteBox">
+          제한속도 표지판은 도로에서 허용되는 기준 속도를 알려 줍니다. 현재 그래프에서는 속도가 거의 일정하게 유지되는 모습을 볼 수 있습니다.
+        </div>
+
+        <div class="btn-row">
+          <button class="ghost-btn" id="resetBtn">다시 시작</button>
+        </div>
+      </section>
+    </section>
+
+    <div class="footer">표지판을 해석하면 자동차의 움직임과 주행 전략이 달라진다는 점을 그래프와 장면으로 확인해 보세요.</div>
+  </main>
+
+  <script>
+    const scenarios = {
+      speed100: {
+        title: "제한속도 100",
+        speed: 100,
+        distance: 325,
+        position: "서울 출발",
+        speedExplain: "표지판에 맞춰 일정하게 주행",
+        concept: "속도를 일정하게 유지함",
+        note: "제한속도 표지판은 도로에서 허용되는 기준 속도를 알려 줍니다. 현재 그래프에서는 속도가 거의 일정하게 유지되는 모습을 볼 수 있습니다.",
+        graph: [92, 96, 99, 100, 100, 100, 99, 100, 100],
+        scene: {
+          sky: "#dff2ff",
+          road: "#555b66",
+          side: "#8cc56e",
+          mood: "맑은 고속 주행",
+          signKind: "circle100",
+          carOffset: 0.58,
+          sun: true,
+          cones: false,
+          rest: false
+        }
+      },
+      slow: {
+        title: "감속",
+        speed: 70,
+        distance: 250,
+        position: "대전 부근",
+        speedExplain: "앞 상황을 보고 천천히 줄이는 중",
+        concept: "위험 가능성을 보고 미리 감속함",
+        note: "감속 표지판은 단순히 느리게 가라는 뜻이 아니라, 앞 도로의 곡선·혼잡·위험 요소를 예상하고 속도를 줄이라는 신호입니다.",
+        graph: [100, 98, 92, 86, 80, 76, 72, 70, 70],
+        scene: {
+          sky: "#eaf5ff",
+          road: "#5d6168",
+          side: "#9ccd81",
+          mood: "앞쪽 주의 구간",
+          signKind: "triangle",
+          carOffset: 0.42,
+          sun: true,
+          cones: false,
+          rest: false
+        }
+      },
+      construction: {
+        title: "공사 구간",
+        speed: 40,
+        distance: 145,
+        position: "대구 부근",
+        speedExplain: "공사 구간이라 크게 줄임",
+        concept: "도로 환경이 바뀌면 더 낮은 속도가 필요함",
+        note: "공사 구간에서는 차선 폭이 좁아지거나 작업 차량이 있을 수 있어 더 큰 폭의 감속이 필요합니다. 그래프의 기울기가 더 가파른 이유를 살펴보세요.",
+        graph: [95, 88, 78, 65, 55, 48, 44, 40, 40],
+        scene: {
+          sky: "#fff2d8",
+          road: "#62666e",
+          side: "#c6b27d",
+          mood: "공사로 인한 저속 주행",
+          signKind: "construction",
+          carOffset: 0.28,
+          sun: false,
+          cones: true,
+          rest: false
+        }
+      },
+      rest: {
+        title: "휴게소",
+        speed: 20,
+        distance: 95,
+        position: "부산 진입 전",
+        speedExplain: "휴게소로 들어가며 천천히 이동",
+        concept: "주행 목적에 따라 속도를 더 낮출 수 있음",
+        note: "휴게소 표지판은 반드시 빠르게 지나가는 상황이 아니라, 진입을 위해 차선을 바꾸고 속도를 낮추는 상황과 연결될 수 있습니다.",
+        graph: [95, 86, 74, 60, 48, 35, 28, 22, 20],
+        scene: {
+          sky: "#e7f7ff",
+          road: "#5d636d",
+          side: "#81c996",
+          mood: "휴게소 진입",
+          signKind: "rest",
+          carOffset: 0.18,
+          sun: true,
+          cones: false,
+          rest: true
+        }
+      }
+    };
+
+    const graphCanvas = document.getElementById("graphCanvas");
+    const sceneCanvas = document.getElementById("sceneCanvas");
+    const gctx = graphCanvas.getContext("2d");
+    const sctx = sceneCanvas.getContext("2d");
+
+    const positionText = document.getElementById("positionText");
+    const speedText = document.getElementById("speedText");
+    const distanceText = document.getElementById("distanceText");
+    const signText = document.getElementById("signText");
+    const speedExplain = document.getElementById("speedExplain");
+    const conceptText = document.getElementById("conceptText");
+    const noteBox = document.getElementById("noteBox");
+
+    function drawGraph(data){
+      const w = graphCanvas.width;
+      const h = graphCanvas.height;
+      gctx.clearRect(0,0,w,h);
+
+      gctx.fillStyle = "#ffffff";
+      gctx.fillRect(0,0,w,h);
+
+      const m = {top:24, right:20, bottom:46, left:58};
+      const cw = w - m.left - m.right;
+      const ch = h - m.top - m.bottom;
+
+      gctx.strokeStyle = "#dce6f4";
+      gctx.lineWidth = 1;
+
+      for(let i=0;i<=6;i++){
+        const y = m.top + (ch/6)*i;
+        gctx.beginPath();
+        gctx.moveTo(m.left, y);
+        gctx.lineTo(w-m.right, y);
+        gctx.stroke();
+      }
+
+      for(let i=0;i<=8;i++){
+        const x = m.left + (cw/8)*i;
+        gctx.beginPath();
+        gctx.moveTo(x, m.top);
+        gctx.lineTo(x, h-m.bottom);
+        gctx.stroke();
+      }
+
+      gctx.strokeStyle = "#52627d";
+      gctx.lineWidth = 2;
+      gctx.beginPath();
+      gctx.moveTo(m.left, m.top);
+      gctx.lineTo(m.left, h-m.bottom);
+      gctx.lineTo(w-m.right, h-m.bottom);
+      gctx.stroke();
+
+      gctx.fillStyle = "#33435f";
+      gctx.font = "bold 16px Arial";
+      gctx.textAlign = "center";
+      gctx.fillText("시간의 흐름", m.left + cw/2, h - 12);
+
+      gctx.save();
+      gctx.translate(18, m.top + ch/2);
+      gctx.rotate(-Math.PI/2);
+      gctx.fillText("속도 (km/h)", 0, 0);
+      gctx.restore();
+
+      gctx.font = "15px Arial";
+      gctx.textAlign = "right";
+      for(let i=0;i<=6;i++){
+        const value = 120 - i*20;
+        const y = m.top + (ch/6)*i + 5;
+        gctx.fillText(String(value), m.left - 8, y);
+      }
+
+      gctx.textAlign = "center";
+      for(let i=0;i<9;i++){
+        const x = m.left + (cw/8)*i;
+        gctx.fillText(String(i+1), x, h - 24);
+      }
+
+      gctx.fillStyle = "#2f6fe4";
+      gctx.font = "bold 15px Arial";
+      gctx.textAlign = "left";
+      gctx.fillText("범례: 파란선 = 자동차 속도", m.left + 6, m.top - 6);
+
+      gctx.strokeStyle = "#2f6fe4";
+      gctx.lineWidth = 4;
+      gctx.beginPath();
+      data.forEach((v, i) => {
+        const x = m.left + (cw/8)*i;
+        const y = m.top + ch * (1 - v/120);
+        if(i===0){ gctx.moveTo(x, y); }
+        else{ gctx.lineTo(x, y); }
+      });
+      gctx.stroke();
+
+      data.forEach((v, i) => {
+        const x = m.left + (cw/8)*i;
+        const y = m.top + ch * (1 - v/120);
+        gctx.beginPath();
+        gctx.fillStyle = "#ffffff";
+        gctx.strokeStyle = "#2f6fe4";
+        gctx.lineWidth = 3;
+        gctx.arc(x, y, 5.5, 0, Math.PI*2);
+        gctx.fill();
+        gctx.stroke();
+      });
+    }
+
+    function drawScene(scene){
+      const w = sceneCanvas.width;
+      const h = sceneCanvas.height;
+      sctx.clearRect(0,0,w,h);
+
+      sctx.fillStyle = scene.sky;
+      sctx.fillRect(0,0,w,h*0.62);
+
+      sctx.fillStyle = scene.side;
+      sctx.fillRect(0,h*0.62,w,h*0.38);
+
+      if(scene.sun){
+        sctx.fillStyle = "#ffd75e";
+        sctx.beginPath();
+        sctx.arc(w-58,58,24,0,Math.PI*2);
+        sctx.fill();
+      } else {
+        sctx.fillStyle = "#c9cfd8";
+        for(let i=0;i<3;i++){
+          sctx.beginPath();
+          sctx.arc(360+i*22, 60, 20, 0, Math.PI*2);
+          sctx.arc(378+i*22, 52, 24, 0, Math.PI*2);
+          sctx.fill();
+        }
+      }
+
+      sctx.fillStyle = "#7fa0bf";
+      sctx.beginPath();
+      sctx.moveTo(0, 170);
+      sctx.lineTo(90, 115);
+      sctx.lineTo(180, 170);
+      sctx.closePath();
+      sctx.fill();
+
+      sctx.beginPath();
+      sctx.moveTo(120, 172);
+      sctx.lineTo(230, 102);
+      sctx.lineTo(340, 172);
+      sctx.closePath();
+      sctx.fill();
+
+      sctx.fillStyle = scene.road;
+      sctx.beginPath();
+      sctx.moveTo(0,h);
+      sctx.lineTo(120,210);
+      sctx.lineTo(400,210);
+      sctx.lineTo(w,h);
+      sctx.closePath();
+      sctx.fill();
+
+      sctx.strokeStyle = "#f7f2a3";
+      sctx.lineWidth = 6;
+      for(let i=0;i<6;i++){
+        const x1 = 195 + i*46;
+        const y1 = 228 + i*14;
+        const x2 = 220 + i*46;
+        const y2 = 237 + i*14;
+        sctx.beginPath();
+        sctx.moveTo(x1,y1);
+        sctx.lineTo(x2,y2);
+        sctx.stroke();
+      }
+
+      sctx.fillStyle = "#6f8f59";
+      for(let i=0;i<4;i++){
+        const tx = 38 + i*80;
+        sctx.fillRect(tx,165,8,28);
+        sctx.beginPath();
+        sctx.arc(tx+4,156,18,0,Math.PI*2);
+        sctx.fill();
+      }
+
+      if(scene.rest){
+        sctx.fillStyle = "#ffffff";
+        sctx.fillRect(50,120,92,50);
+        sctx.strokeStyle = "#1f67d8";
+        sctx.lineWidth = 4;
+        sctx.strokeRect(50,120,92,50);
+        sctx.fillStyle = "#1f67d8";
+        sctx.font = "bold 22px Arial";
+        sctx.textAlign = "center";
+        sctx.fillText("휴게소", 96, 151);
+      }
+
+      if(scene.cones){
+        for(let i=0;i<5;i++){
+          const cx = 320 + i*28;
+          const cy = 216 + i*11;
+          sctx.fillStyle = "#ff8a2a";
+          sctx.beginPath();
+          sctx.moveTo(cx, cy);
+          sctx.lineTo(cx-10, cy+22);
+          sctx.lineTo(cx+10, cy+22);
+          sctx.closePath();
+          sctx.fill();
+          sctx.strokeStyle = "#ffffff";
+          sctx.lineWidth = 3;
+          sctx.beginPath();
+          sctx.moveTo(cx-7, cy+12);
+          sctx.lineTo(cx+7, cy+12);
+          sctx.stroke();
+        }
+      }
+
+      const signX = 430;
+      const signY = 98;
+      sctx.fillStyle = "#666";
+      sctx.fillRect(signX+18, signY+52, 6, 92);
+
+      if(scene.signKind === "circle100"){
+        sctx.fillStyle = "#fff";
+        sctx.beginPath();
+        sctx.arc(signX+21, signY+25, 24, 0, Math.PI*2);
+        sctx.fill();
+        sctx.strokeStyle = "#d83f3f";
+        sctx.lineWidth = 6;
+        sctx.stroke();
+        sctx.fillStyle = "#111";
+        sctx.font = "bold 18px Arial";
+        sctx.textAlign = "center";
+        sctx.fillText("100", signX+21, signY+31);
+      } else if(scene.signKind === "triangle"){
+        sctx.fillStyle = "#d83f3f";
+        sctx.beginPath();
+        sctx.moveTo(signX+21, signY);
+        sctx.lineTo(signX-6, signY+48);
+        sctx.lineTo(signX+48, signY+48);
+        sctx.closePath();
+        sctx.fill();
+        sctx.fillStyle = "#fff";
+        sctx.beginPath();
+        sctx.moveTo(signX+21, signY+10);
+        sctx.lineTo(signX+1, signY+43);
+        sctx.lineTo(signX+41, signY+43);
+        sctx.closePath();
+        sctx.fill();
+        sctx.fillStyle = "#111";
+        sctx.font = "bold 24px Arial";
+        sctx.fillText("!", signX+21, signY+36);
+      } else if(scene.signKind === "construction"){
+        sctx.fillStyle = "#d83f3f";
+        sctx.beginPath();
+        sctx.moveTo(signX+21, signY);
+        sctx.lineTo(signX-6, signY+48);
+        sctx.lineTo(signX+48, signY+48);
+        sctx.closePath();
+        sctx.fill();
+        sctx.fillStyle = "#fff";
+        sctx.beginPath();
+        sctx.moveTo(signX+21, signY+10);
+        sctx.lineTo(signX+1, signY+43);
+        sctx.lineTo(signX+41, signY+43);
+        sctx.closePath();
+        sctx.fill();
+        sctx.fillStyle = "#111";
+        sctx.font = "bold 18px Arial";
+        sctx.fillText("공사", signX+21, signY+35);
+      } else if(scene.signKind === "rest"){
+        sctx.fillStyle = "#fff";
+        sctx.fillRect(signX-8, signY, 58, 46);
+        sctx.strokeStyle = "#1f67d8";
+        sctx.lineWidth = 5;
+        sctx.strokeRect(signX-8, signY, 58, 46);
+        sctx.fillStyle = "#1f67d8";
+        sctx.font = "bold 16px Arial";
+        sctx.fillText("휴게소", signX+21, signY+29);
+      }
+
+      const carX = 130 + scene.carOffset * 210;
+      const carY = 238 + (1-scene.carOffset)*24;
+
+      sctx.fillStyle = "#2f6fe4";
+      sctx.fillRect(carX, carY, 84, 26);
+      sctx.beginPath();
+      sctx.moveTo(carX+18, carY);
+      sctx.lineTo(carX+34, carY-17);
+      sctx.lineTo(carX+62, carY-17);
+      sctx.lineTo(carX+74, carY);
+      sctx.closePath();
+      sctx.fill();
+
+      sctx.fillStyle = "#cfe6ff";
+      sctx.fillRect(carX+30, carY-14, 28, 10);
+
+      sctx.fillStyle = "#222";
+      sctx.beginPath();
+      sctx.arc(carX+20, carY+28, 10, 0, Math.PI*2);
+      sctx.arc(carX+64, carY+28, 10, 0, Math.PI*2);
+      sctx.fill();
+
+      sctx.fillStyle = "#fafafa";
+      sctx.beginPath();
+      sctx.arc(carX+20, carY+28, 4, 0, Math.PI*2);
+      sctx.arc(carX+64, carY+28, 4, 0, Math.PI*2);
+      sctx.fill();
+
+      sctx.fillStyle = "#20314f";
+      sctx.font = "bold 24px Arial";
+      sctx.textAlign = "left";
+      sctx.fillText(scene.mood, 18, 30);
+
+      sctx.font = "bold 18px Arial";
+      sctx.fillStyle = "#33435f";
+      sctx.fillText("서울", 22, 300);
+      sctx.fillText("부산", 450, 300);
+    }
+
+    function updateUI(type){
+      const item = scenarios[type];
+      positionText.textContent = item.position;
+      speedText.textContent = item.speed + " km/h";
+      distanceText.textContent = item.distance + " km";
+      signText.textContent = item.title;
+      speedExplain.textContent = item.speedExplain;
+      conceptText.textContent = item.concept;
+      noteBox.textContent = item.note;
+
+      drawGraph(item.graph);
+      drawScene(item.scene);
+
+      document.querySelectorAll(".sign-btn").forEach(btn=>{
+        btn.classList.toggle("active", btn.dataset.type === type);
+      });
+    }
+
+    document.querySelectorAll(".sign-btn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        updateUI(btn.dataset.type);
+      });
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", ()=>{
+      updateUI("speed100");
+    });
+
+    updateUI("speed100");
+  </script>
+</body>
+</html>
